@@ -6,6 +6,7 @@
 - [x] On-chip Ethernet 片上以太网
 - [ ] SCPI
 - [ ] On-chip Audio 片上音频
+- [x] (Mainline) AMD DCN
 
 Tested on FT-D2000
 
@@ -13,7 +14,7 @@ Tested on FT-D2000
 
 ## Binary 二进制包
 
-See <https://repo.saezi.ae/readme.html>
+See <https://repo.saezi.ae/readme.html> <https://repo.saezi.ae/archlinux/saeziae/aarch64/>
 
 ## Based on the work of  基于
 

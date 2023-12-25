@@ -2,10 +2,10 @@
 
 pkgbase=linux-phytium
 _desc="Linux Kernel for Phytium"
-pkgver=6.0.5
-_majver=$(cut -d. -f1-2 <<< ${pkgver})
+pkgver=6.2.11
 pkgrel=1
 _srcname=linux-$pkgver
+_majver=$(cut -f-2 -d. <<<$pkgver)
 arch=(aarch64)
 url="http://kernel.org/"
 license=(GPL2)
@@ -16,19 +16,17 @@ source=("http://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar
         '0002-phytium-ethernet-stmmac.patch'
         '0003-phytium-i2c.patch'
         '0004-phytium-mailbox.patch'
-	'dcn_arm64.patch'
-        "https://github.com/zhmars/cjktty-patches/raw/master/v${pkgver%%.*}.x/cjktty-${_majver}.patch"
+        "https://github.com/zhmars/cjktty-patches/raw/master/v${pkgver%%.*}.x/cjktty-$_majver.patch"
         'https://github.com/zhmars/cjktty-patches/raw/master/cjktty-add-cjk32x32-font-data.patch'
         'config')
-md5sums=('6c36b53e3928ba45b656f64303b71662'
+md5sums=('78d3ab3a52fe283aabca27dad4005d07'
          '306246f0c84ac42e1e9a281501523b37'
          '0fd6f18f6e5f1a36353b9e3b6b3dae59'
          'e35ac6093d6c9b40208ef1043bc818a6'
          '1afc917c70bde299e5343b39d5953c0f'
-         '9c1c8ad90edbce7a4c3a75a2b6302056'
-         'd61bd27f238c32bf8ed397f64fa08916'
+         '72425cc8f8a88e8036714fbf4203abd0'
          'b2dde194f5b6a6fa9ab1b5da87aa51a0'
-         '9eac9e1699cf5a2279bb94c14c751cb5')
+         'd253c8c481ee6a2ec8b24e2a358b2ad0')
 
 prepare() {
   cd $_srcname
@@ -38,13 +36,13 @@ prepare() {
     src="${src##*/}"
     [[ $src = *.patch ]] || continue
     echo "Applying patch $src..."
-    patch -Np1 < "../$src"
+    patch -Np1 <"../$src"
   done
 
   echo "Setting version..."
   scripts/setlocalversion --save-scmversion
-  echo "-$pkgrel" > localversion.10-pkgrel
-  echo "${pkgbase#linux}" > localversion.20-pkgname
+  echo "-$pkgrel" >localversion.10-pkgrel
+  echo "${pkgbase#linux}" >localversion.20-pkgname
 
   echo "Setting config..."
   cp ../config .config
@@ -52,7 +50,7 @@ prepare() {
   diff -u ../config .config || :
   cp .config ../../config.new
 
-  make -s kernelrelease > version
+  make -s kernelrelease >version
   echo "Prepared $pkgbase version $(<version)"
 }
 
@@ -65,7 +63,7 @@ _package() {
   pkgdesc="The Linux Kernel and modules - ${_desc}"
   depends=(coreutils kmod initramfs)
   optdepends=('wireless-regdb: to set the correct wireless channels of your country'
-              'linux-firmware: firmware images needed for some devices')
+    'linux-firmware: firmware images needed for some devices')
   provides=("linux=${pkgver}" "WIREGUARD-MODULE")
   install=${pkgname}.install
 
@@ -148,14 +146,14 @@ _package-headers() {
   local file
   while read -rd '' file; do
     case "$(file -bi "$file")" in
-      application/x-sharedlib\;*)      # Libraries (.so)
-        strip -v $STRIP_SHARED "$file" ;;
-      application/x-archive\;*)        # Libraries (.a)
-        strip -v $STRIP_STATIC "$file" ;;
-      application/x-executable\;*)     # Binaries
-        strip -v $STRIP_BINARIES "$file" ;;
-      application/x-pie-executable\;*) # Relocatable binaries
-        strip -v $STRIP_SHARED "$file" ;;
+    application/x-sharedlib\;*) # Libraries (.so)
+      strip -v $STRIP_SHARED "$file" ;;
+    application/x-archive\;*) # Libraries (.a)
+      strip -v $STRIP_STATIC "$file" ;;
+    application/x-executable\;*) # Binaries
+      strip -v $STRIP_BINARIES "$file" ;;
+    application/x-pie-executable\;*) # Relocatable binaries
+      strip -v $STRIP_SHARED "$file" ;;
     esac
   done < <(find "$builddir" -type f -perm -u+x ! -name vmlinux -print0)
 
